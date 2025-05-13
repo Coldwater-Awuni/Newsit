@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -44,7 +44,7 @@ export default function Navbar() {
         className={cn(
           "text-sm font-medium",
           pathname === href ? "text-primary hover:text-primary" : "hover:text-primary/80",
-          "transition-colors duration-200"
+          "transition-colors duration-200 w-full justify-start text-left" // Ensure full width and left align for sheet
         )}
         onClick={onClick}
       >
@@ -56,7 +56,7 @@ export default function Navbar() {
   const CategoriesDropdown = ({ onLinkClick }: { onLinkClick?: () => void }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="text-sm font-medium hover:text-primary/80 transition-colors duration-200">
+        <Button variant="ghost" className="text-sm font-medium hover:text-primary/80 transition-colors duration-200 w-full justify-start text-left md:w-auto">
           Categories
         </Button>
       </DropdownMenuTrigger>
@@ -107,21 +107,28 @@ export default function Navbar() {
             <SheetTrigger asChild>
               <Button variant="outline" size="icon">
                 <Menu size={24} />
+                <span className="sr-only">Open navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] p-6 bg-card">
-              <div className="flex flex-col gap-4">
-                <Link href="/" className="flex items-center gap-2 text-lg font-bold text-primary mb-4">
-                  <BookOpenText size={24} />
-                  Inkling Insights
-                </Link>
+            <SheetContent side="right" className="w-[280px] bg-card p-0 flex flex-col">
+              <SheetHeader className="p-6 border-b">
+                <SheetTitle className="text-left text-lg">Navigation Menu</SheetTitle>
+              </SheetHeader>
+              <div className="p-6 flex flex-col gap-4 flex-grow overflow-y-auto">
+                <SheetClose asChild>
+                  <Link href="/" className="flex items-center gap-2 text-lg font-bold text-primary mb-4">
+                    <BookOpenText size={24} />
+                    Inkling Insights
+                  </Link>
+                </SheetClose>
+                
                 {navLinks.map(link => (
                   <SheetClose asChild key={link.href}>
                      <NavLinkItem {...link} />
                   </SheetClose>
                 ))}
                  <SheetClose asChild>
-                    <CategoriesDropdown />
+                    <CategoriesDropdown onLinkClick={() => { /* Close sheet if needed */ }} />
                   </SheetClose>
 
                 <div className="relative mt-4">
@@ -130,7 +137,7 @@ export default function Navbar() {
                 </div>
                 <SheetClose asChild>
                   <Link href="/admin" passHref>
-                      <Button variant="outline" className="w-full mt-4">
+                      <Button variant="outline" className="w-full mt-auto pt-4"> {/* mt-auto to push to bottom */}
                         <Settings size={16} className="mr-2" /> Admin Panel
                       </Button>
                   </Link>
