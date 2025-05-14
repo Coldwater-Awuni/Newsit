@@ -4,18 +4,17 @@
 import Link from 'next/link';
 import { BookOpenText, Search, Menu, Settings, FileText } from 'lucide-react'; 
 import { useState, useEffect } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation'; // Added useSearchParams
+import { usePathname, useSearchParams, useRouter } from 'next/navigation'; 
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-// Removed unused DialogTitle import from previous attempt. If SheetTitle/Description are not enough, specific Radix DialogTitle might be needed.
 import { cn } from '@/lib/utils';
 import { CATEGORIES } from '@/lib/mock-data';
 
 
-const navLinks = [
+const mainNavLinks = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
 ];
@@ -24,6 +23,8 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,28 +34,38 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleSearchSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/blog?search=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm(''); // Clear search term after navigation
+      if (isMobileSheetOpen) setIsMobileSheetOpen(false); // Close sheet on mobile
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit();
+    }
+  };
+
   const NavLinkItem = ({ href, label, onClick, isCategoryLink = false }: { href: string, label: string, onClick?: () => void, isCategoryLink?: boolean }) => {
-    const componentSearchParams = useSearchParams(); // Use hook for search parameters
+    const componentSearchParams = useSearchParams(); 
     let determinedIsActive = false;
 
     if (isCategoryLink) {
         const currentUrlCategoryQueryParam = componentSearchParams.get('category');
-
         let linkHrefCategory: string | null = null;
         try {
-            // Use a dummy base URL as href is a path like /blog?category=Technology
             const linkUrl = new URL(href, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
             linkHrefCategory = linkUrl.searchParams.get('category');
         } catch (e) {
             console.error("Error parsing link href for category in NavLinkItem:", href, e);
         }
 
-        // Active if: current page is /blog and category query param matches this link's category.
         if (pathname.startsWith('/blog') && linkHrefCategory && currentUrlCategoryQueryParam === linkHrefCategory) {
             determinedIsActive = true;
         } 
-        // Active if: current page is /categories/[categoryName] and [categoryName] (decoded) matches this link's label.
-        // (Assuming label is the plain, decoded category name)
         else if (pathname.startsWith('/categories/')) {
             const pathCategorySegment = decodeURIComponent(pathname.substring('/categories/'.length));
             if (pathCategorySegment === label) {
@@ -62,7 +73,6 @@ export default function Navbar() {
             }
         }
     } else {
-        // For non-category links (Home, About)
         determinedIsActive = pathname === href;
     }
     
@@ -100,10 +110,20 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
-          <div className="relative w-40 ml-2">
-            <Input type="search" placeholder="Search..." className="h-9 pr-8 bg-background/70 focus:bg-background text-xs" />
-            <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          </div>
+          <form onSubmit={handleSearchSubmit} className="relative w-40 ml-2">
+            <Input 
+              type="search" 
+              placeholder="Search..." 
+              className="h-9 pr-8 bg-background/70 focus:bg-background text-xs"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+            />
+            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <Search className="h-4 w-4" />
+              <span className="sr-only">Submit search</span>
+            </button>
+          </form>
           <ThemeToggle />
           <Link href="/admin" passHref>
             <Button variant="outline" size="sm">
@@ -125,14 +145,12 @@ export default function Navbar() {
             <SheetContent 
               side="right" 
               className="w-[280px] bg-card p-0 flex flex-col"
-              aria-labelledby="mobile-sheet-title" 
-              aria-describedby="mobile-sheet-description"
             >
               <SheetHeader className="p-6 border-b">
-                <SheetTitle id="mobile-sheet-title" className="text-left text-lg flex items-center"> 
+                <SheetTitle className="text-left text-lg flex items-center"> 
                   <FileText size={20} className="mr-2 text-primary" /> Menu
                 </SheetTitle>
-                <SheetDescription id="mobile-sheet-description" className="text-left text-xs text-muted-foreground">
+                <SheetDescription className="text-left text-xs text-muted-foreground">
                     Navigate through Inkling Insights.
                 </SheetDescription>
               </SheetHeader>
@@ -144,7 +162,7 @@ export default function Navbar() {
                   </Link>
                 </SheetClose>
                 
-                {navLinks.map(link => (
+                {mainNavLinks.map(link => (
                    <SheetClose key={link.href} asChild><NavLinkItem {...link} onClick={handleMobileLinkClick} /></SheetClose>
                 ))}
                 
@@ -162,10 +180,20 @@ export default function Navbar() {
                     ))}
                 </div>
 
-                <div className="relative mt-auto pt-4">
-                  <Input type="search" placeholder="Search posts..." className="h-9 pr-8 bg-background/70 focus:bg-background" />
-                  <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground mt-2" />
-                </div>
+                <form onSubmit={handleSearchSubmit} className="relative mt-auto pt-4">
+                  <Input 
+                    type="search" 
+                    placeholder="Search posts..." 
+                    className="h-9 pr-8 bg-background/70 focus:bg-background" 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                  />
+                   <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground mt-2"> {/* mt-2 to align with input padding*/}
+                    <Search className="h-4 w-4" />
+                    <span className="sr-only">Submit search</span>
+                  </button>
+                </form>
                 <SheetClose asChild>
                   <Link href="/admin" passHref>
                       <Button variant="outline" className="w-full mt-2" onClick={handleMobileLinkClick}>
@@ -186,12 +214,12 @@ export default function Navbar() {
         )}>
         <div className="container mx-auto px-4">
           <nav className="flex items-center justify-center gap-x-1 py-2">
-            {navLinks.map(link => (
+            {mainNavLinks.map(link => (
               <NavLinkItem 
                 key={link.href} 
                 href={link.href} 
                 label={link.label}
-                isCategoryLink={false}
+                isCategoryLink={false} 
               />
             ))}
             {CATEGORIES.map(category => (
@@ -208,3 +236,4 @@ export default function Navbar() {
     </header>
   );
 }
+
