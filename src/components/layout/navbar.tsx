@@ -4,13 +4,13 @@
 import Link from 'next/link';
 import { BookOpenText, Search, Menu, Settings, FileText } from 'lucide-react'; 
 import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation'; // Added useSearchParams
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { DialogTitle } from '@/components/ui/dialog';
+// Removed unused DialogTitle import from previous attempt. If SheetTitle/Description are not enough, specific Radix DialogTitle might be needed.
 import { cn } from '@/lib/utils';
 import { CATEGORIES } from '@/lib/mock-data';
 
@@ -34,16 +34,36 @@ export default function Navbar() {
   }, []);
 
   const NavLinkItem = ({ href, label, onClick, isCategoryLink = false }: { href: string, label: string, onClick?: () => void, isCategoryLink?: boolean }) => {
-    let isActive = pathname === href;
-    if (isCategoryLink) {
-      const currentCategoryQueryParam = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('category');
-      const linkCategoryParam = new URLSearchParams(href.split('?')[1] || '').get('category');
+    const componentSearchParams = useSearchParams(); // Use hook for search parameters
+    let determinedIsActive = false;
 
-      if (pathname.startsWith('/blog') && linkCategoryParam && currentCategoryQueryParam === linkCategoryParam) {
-        isActive = true;
-      } else if (pathname === `/categories/${encodeURIComponent(label)}`) { 
-        isActive = true;
-      }
+    if (isCategoryLink) {
+        const currentUrlCategoryQueryParam = componentSearchParams.get('category');
+
+        let linkHrefCategory: string | null = null;
+        try {
+            // Use a dummy base URL as href is a path like /blog?category=Technology
+            const linkUrl = new URL(href, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+            linkHrefCategory = linkUrl.searchParams.get('category');
+        } catch (e) {
+            console.error("Error parsing link href for category in NavLinkItem:", href, e);
+        }
+
+        // Active if: current page is /blog and category query param matches this link's category.
+        if (pathname.startsWith('/blog') && linkHrefCategory && currentUrlCategoryQueryParam === linkHrefCategory) {
+            determinedIsActive = true;
+        } 
+        // Active if: current page is /categories/[categoryName] and [categoryName] (decoded) matches this link's label.
+        // (Assuming label is the plain, decoded category name)
+        else if (pathname.startsWith('/categories/')) {
+            const pathCategorySegment = decodeURIComponent(pathname.substring('/categories/'.length));
+            if (pathCategorySegment === label) {
+                determinedIsActive = true;
+            }
+        }
+    } else {
+        // For non-category links (Home, About)
+        determinedIsActive = pathname === href;
     }
     
     return (
@@ -52,7 +72,7 @@ export default function Navbar() {
             variant="ghost"
             className={cn(
             "text-sm font-medium py-1 px-3 h-auto", 
-            isActive ? "text-primary bg-primary/10 hover:text-primary hover:bg-primary/15" : "hover:text-primary/80 hover:bg-muted/50",
+            determinedIsActive ? "text-primary bg-primary/10 hover:text-primary hover:bg-primary/15" : "hover:text-primary/80 hover:bg-muted/50",
             "transition-colors duration-200 w-full justify-start text-left md:w-auto"
             )}
             onClick={onClick}
@@ -79,9 +99,7 @@ export default function Navbar() {
           <span>Inkling Insights</span>
         </Link>
 
-        {/* Desktop Main Navigation Items (excluding categories and general links) */}
         <nav className="hidden md:flex items-center gap-1">
-          {/* Home and About links removed from here */}
           <div className="relative w-40 ml-2">
             <Input type="search" placeholder="Search..." className="h-9 pr-8 bg-background/70 focus:bg-background text-xs" />
             <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -110,9 +128,8 @@ export default function Navbar() {
               aria-labelledby="mobile-sheet-title" 
               aria-describedby="mobile-sheet-description"
             >
-              <DialogTitle id="mobile-sheet-title" className="sr-only">Navigation Menu</DialogTitle>
               <SheetHeader className="p-6 border-b">
-                <SheetTitle className="text-left text-lg flex items-center"> 
+                <SheetTitle id="mobile-sheet-title" className="text-left text-lg flex items-center"> 
                   <FileText size={20} className="mr-2 text-primary" /> Menu
                 </SheetTitle>
                 <SheetDescription id="mobile-sheet-description" className="text-left text-xs text-muted-foreground">
@@ -174,7 +191,7 @@ export default function Navbar() {
                 key={link.href} 
                 href={link.href} 
                 label={link.label}
-                isCategoryLink={false} // Explicitly set for general links
+                isCategoryLink={false}
               />
             ))}
             {CATEGORIES.map(category => (
