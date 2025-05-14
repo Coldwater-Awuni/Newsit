@@ -83,7 +83,7 @@ export default function PostListSidebar({
                     selectedPostId === post.id && "bg-muted"
                   )}
                 >
-                  <h3 className="font-medium truncate">{post.title}</h3>
+                  <h3 className="font-medium">{post.title}</h3>
                   <div className="text-xs text-muted-foreground flex items-center justify-between mt-1">
                     <span>{format(new Date(post.publishDate), 'MMM d, yyyy')}</span>
                     <Badge variant={post.status === 'published' ? 'default' : 'secondary'} className="capitalize">
