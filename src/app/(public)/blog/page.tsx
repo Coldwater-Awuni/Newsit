@@ -1,9 +1,11 @@
-'use client'; // For query params and filtering logic
+
+'use client'; 
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import BlogCard from '@/components/blog/blog-card';
 import PostFilters from '@/components/blog/post-filters';
+import CategoryDisplayBar from '@/components/blog/CategoryDisplayBar';
 import { BLOG_POSTS, CATEGORIES, TAGS } from '@/lib/mock-data';
 import type { BlogPost } from '@/lib/types';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
@@ -17,6 +19,9 @@ export default function BlogPage() {
   const searchTerm = searchParams.get('search') || '';
   const selectedCategory = searchParams.get('category') || '';
   const selectedTag = searchParams.get('tag') || '';
+
+  const showPostFilters = !!searchTerm;
+  const showCategoryDisplayBar = !!selectedCategory && !searchTerm;
 
   const filteredPosts = useMemo(() => {
     return BLOG_POSTS
@@ -34,7 +39,8 @@ export default function BlogPage() {
   const paginatedPosts = filteredPosts.slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE);
 
   useEffect(() => {
-    setCurrentPage(1); // Reset to first page on filter change
+    setCurrentPage(1); 
+    window.scrollTo(0, 0);
   }, [searchTerm, selectedCategory, selectedTag]);
   
   const handlePageChange = (page: number) => {
@@ -46,8 +52,22 @@ export default function BlogPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-4xl font-bold text-center">Explore Our Articles</h1>
-      <PostFilters categories={CATEGORIES} tags={TAGS} />
+      {showPostFilters && (
+        <>
+          <h1 className="text-4xl font-bold text-center">
+            Search Results for: <span className="text-primary">&quot;{searchTerm}&quot;</span>
+          </h1>
+          <PostFilters categories={CATEGORIES} tags={TAGS} />
+        </>
+      )}
+
+      {showCategoryDisplayBar && (
+        <CategoryDisplayBar category={selectedCategory} />
+      )}
+
+      {!showPostFilters && !showCategoryDisplayBar && (
+         <h1 className="text-4xl font-bold text-center">Explore Our Articles</h1>
+      )}
       
       {paginatedPosts.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -57,7 +77,7 @@ export default function BlogPage() {
         </div>
       ) : (
         <p className="text-center text-muted-foreground text-lg py-12">
-          No posts found matching your criteria. Try adjusting your filters!
+          No posts found matching your criteria. Try adjusting your filters or search!
         </p>
       )}
 
@@ -73,7 +93,6 @@ export default function BlogPage() {
             </PaginationItem>
             {[...Array(totalPages)].map((_, i) => {
               const pageNum = i + 1;
-              // Basic pagination display logic (can be improved for many pages)
               if (totalPages <= 5 || pageNum === 1 || pageNum === totalPages || Math.abs(pageNum - currentPage) <= 1) {
                 return (
                   <PaginationItem key={i}>

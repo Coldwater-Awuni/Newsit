@@ -1,7 +1,7 @@
 import type { BlogPost } from './types';
 
-export const CATEGORIES = ['Technology', 'Science', 'Lifestyle', 'Travel', 'Business'];
-export const TAGS = ['Innovation', 'Research', 'Health', 'Adventure', 'Startups', 'AI', 'Space', 'Productivity'];
+export const CATEGORIES = ['Technology', 'Science', 'Lifestyle', 'Travel', 'Business', 'News'];
+export const TAGS = ['Innovation', 'Research', 'Health', 'Adventure', 'Startups', 'AI', 'Space', 'Productivity', 'Breaking', 'Updates'];
 
 export const BLOG_POSTS: BlogPost[] = [
   {
@@ -125,4 +125,27 @@ export const BLOG_POSTS: BlogPost[] = [
     category: 'Business',
     status: 'draft',
   },
+  {
+    id: '6',
+    slug: 'latest-tech-breakthroughs',
+    title: 'Breaking News: Latest Tech Breakthroughs of the Month',
+    excerpt: 'Stay updated with the most recent advancements in the tech world, from AI to quantum computing.',
+    content: `
+      <p>This month has been exciting for technology enthusiasts! We've seen major announcements and breakthroughs across various fields.</p>
+      <h2>Quantum Leap</h2>
+      <p>A new development in quantum computing promises to solve complex problems faster than ever before. Researchers have successfully demonstrated a more stable qubit, paving the way for larger and more reliable quantum computers.</p>
+      <img src="https://placehold.co/800x400.png" alt="Quantum computing concept" data-ai-hint="quantum computer" class="my-4 rounded-md shadow-md" />
+      <h2>AI for Good</h2>
+      <p>An innovative AI model was unveiled that can predict natural disasters with higher accuracy, potentially saving lives and resources. This highlights the positive impact AI can have on society.</p>
+      <p>These are just a couple of highlights. The pace of technological innovation continues to accelerate, and we'll be here to cover the most important developments.</p>
+    `,
+    imageUrl: 'https://placehold.co/1200x800.png',
+    author: { name: 'Inkling News Team', avatarUrl: 'https://placehold.co/100x100.png' },
+    publishDate: new Date().toISOString(), // Sets to current date
+    tags: ['Breaking', 'Updates', 'Technology', 'AI'],
+    category: 'News',
+    featured: false,
+    status: 'published',
+  }
 ];
+    
