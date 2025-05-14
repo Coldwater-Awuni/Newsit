@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -70,7 +71,7 @@ export default function PostListSidebar({
         </div>
       </div>
 
-      <ScrollArea className="flex-grow">
+      <ScrollArea className="flex-grow min-h-0"> {/* Added min-h-0 here */}
         {filteredPosts.length > 0 ? (
           <ul className="divide-y">
             {filteredPosts.map(post => (
@@ -100,3 +101,4 @@ export default function PostListSidebar({
     </aside>
   );
 }
+
