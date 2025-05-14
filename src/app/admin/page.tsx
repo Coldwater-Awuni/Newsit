@@ -9,6 +9,9 @@ import ContentEditor from '@/components/admin/content-editor';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import AiConfigurationCard from '@/components/admin/ai-configuration';
+import type { SafetySetting } from '@/lib/types';
+
 
 // Helper to generate a unique ID (for new posts)
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -20,6 +23,32 @@ export default function AdminPage() {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const { toast } = useToast();
+
+  const [sourceSites, setSourceSites] = useState<string[]>(['https://www.example-news.com/tech', 'https://blog.example.ai/research']);
+  const [safetySettings] = useState<SafetySetting[]>([ 
+    {
+      category: 'HARM_CATEGORY_HATE_SPEECH',
+      threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+    },
+    {
+      category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+      threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+    },
+    {
+      category: 'HARM_CATEGORY_HARASSMENT',
+      threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+    },
+    {
+      category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+      threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+    },
+    {
+      category: 'HARM_CATEGORY_CIVIC_INTEGRITY',
+      threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+    }
+  ]);
+  const aiModelName = 'googleai/gemini-2.0-flash'; // From genkit.ts
+
 
   // Function to refresh the admin page's view of posts from the global source
   const refreshAdminViewPosts = () => {
@@ -117,6 +146,16 @@ export default function AdminPage() {
     }
   };
 
+  const handleAddSourceSite = (site: string) => {
+    setSourceSites((prev) => [...prev, site]);
+    toast({ title: "Source Site Added", description: `"${site}" has been added.` });
+  };
+
+  const handleRemoveSourceSite = (siteToRemove: string) => {
+    setSourceSites((prev) => prev.filter(site => site !== siteToRemove));
+    toast({ title: "Source Site Removed", description: `"${siteToRemove}" has been removed.`, variant: "destructive" });
+  };
+
   return (
     <div className="flex h-[calc(100vh-5rem)] bg-muted/30"> {/* Adjust height based on Navbar */}
       <PostListSidebar
@@ -148,7 +187,15 @@ export default function AdminPage() {
             </div>
           </div>
         )}
+         <AiConfigurationCard
+          modelName={aiModelName}
+          sourceSites={sourceSites}
+          onAddSourceSite={handleAddSourceSite}
+          onRemoveSourceSite={handleRemoveSourceSite}
+          safetySettings={safetySettings}
+        />
       </main>
     </div>
   );
 }
+
