@@ -106,7 +106,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 text-xl font-bold text-primary hover:opacity-80 transition-opacity">
           <BookOpenText size={28} />
-          <span>Inkling Insights</span>
+          <span>NewsIt</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
@@ -151,14 +151,14 @@ export default function Navbar() {
                   <FileText size={20} className="mr-2 text-primary" /> Menu
                 </SheetTitle>
                 <SheetDescription className="text-left text-xs text-muted-foreground">
-                    Navigate through Inkling Insights.
+                    Navigate through NewsIt.
                 </SheetDescription>
               </SheetHeader>
               <div className="p-4 flex flex-col gap-1 flex-grow overflow-y-auto">
                 <SheetClose asChild>
                   <Link href="/" onClick={handleMobileLinkClick} className="flex items-center gap-2 text-lg font-bold text-primary mb-3 p-2 rounded-md hover:bg-muted">
                     <BookOpenText size={24} />
-                    Inkling Insights
+                    NewsIt
                   </Link>
                 </SheetClose>
                 
@@ -236,4 +236,3 @@ export default function Navbar() {
     </header>
   );
 }
-

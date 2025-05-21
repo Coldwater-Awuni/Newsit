@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Inkling Insights - Your Daily Dose of Knowledge',
-  description: 'Discover insightful articles and stories on Inkling Insights.',
+  title: 'NewsIt - Your Daily Dose of Knowledge',
+  description: 'Discover insightful articles and stories on NewsIt.',
 };
 
 export default function RootLayout({

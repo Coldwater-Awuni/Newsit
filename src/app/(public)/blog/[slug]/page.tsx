@@ -98,7 +98,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     return { title: 'Post Not Found' };
   }
   return {
-    title: `${post.title} | Inkling Insights`,
+    title: `${post.title} | NewsIt`,
     description: post.excerpt,
   };
 }

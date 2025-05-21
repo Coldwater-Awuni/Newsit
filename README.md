@@ -1,4 +1,4 @@
-# Firebase Studio
+# NewsIt
 
 This is a NextJS starter in Firebase Studio.
 

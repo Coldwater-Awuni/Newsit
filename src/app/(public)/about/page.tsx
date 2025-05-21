@@ -2,14 +2,14 @@ import { Metadata } from 'next';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'About Us | Inkling Insights',
-  description: 'Learn more about Inkling Insights and our mission.',
+  title: 'About Us | NewsIt',
+  description: 'Learn more about NewsIt and our mission.',
 };
 
 export default function AboutPage() {
   return (
     <div className="max-w-3xl mx-auto py-8">
-      <h1 className="text-4xl font-bold mb-8 text-center text-primary">About Inkling Insights</h1>
+      <h1 className="text-4xl font-bold mb-8 text-center text-primary">About NewsIt</h1>
       
       <div className="relative w-full aspect-[16/9] mb-8 rounded-lg overflow-hidden shadow-lg">
         <Image 
@@ -23,7 +23,7 @@ export default function AboutPage() {
 
       <div className="prose dark:prose-invert prose-lg max-w-none">
         <p>
-          Welcome to Inkling Insights, your daily destination for thought-provoking articles, in-depth analyses, and fresh perspectives on a wide array of topics. We believe in the power of knowledge to inspire, educate, and foster understanding.
+          Welcome to NewsIt, your daily destination for thought-provoking articles, in-depth analyses, and fresh perspectives on a wide array of topics. We believe in the power of knowledge to inspire, educate, and foster understanding.
         </p>
         
         <h2>Our Mission</h2>
@@ -33,7 +33,7 @@ export default function AboutPage() {
 
         <h2>What We Do</h2>
         <p>
-          At Inkling Insights, we curate and create content designed to be both informative and enjoyable. Our team of writers and editors are passionate about their respective fields, ensuring that each article is well-researched, clearly written, and offers valuable insights.
+          At NewsIt, we curate and create content designed to be both informative and enjoyable. Our team of writers and editors are passionate about their respective fields, ensuring that each article is well-researched, clearly written, and offers valuable insights.
         </p>
         
         <h2>Join Our Community</h2>
@@ -41,7 +41,7 @@ export default function AboutPage() {
           We're more than just a blog; we're a community of curious minds. We encourage you to engage with our content, share your thoughts in the comments, and connect with us on social media. Your perspective is valuable, and we look forward to learning and growing together.
         </p>
         <p>
-          Thank you for being a part of Inkling Insights. We hope you find inspiration and knowledge with every visit.
+          Thank you for being a part of NewsIt. We hope you find inspiration and knowledge with every visit.
         </p>
       </div>
     </div>

@@ -26,8 +26,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     return { title: 'Category Not Found' };
   }
   return {
-    title: `Posts in ${categoryName} | Inkling Insights`,
-    description: `Explore articles in the ${categoryName} category on Inkling Insights.`,
+    title: `Posts in ${categoryName} | NewsIt`,
+    description: `Explore articles in the ${categoryName} category on NewsIt.`,
   };
 }
 
