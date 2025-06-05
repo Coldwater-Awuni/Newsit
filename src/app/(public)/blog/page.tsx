@@ -1,7 +1,7 @@
 'use client'; 
 
 import { BlogAPI } from '@/lib/api-client';
-import type { BlogPost } from '@/types';
+import type { BlogPost } from '@/lib/types'; // Changed from @/types
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import BlogCard from '@/components/blog/blog-card';
@@ -9,6 +9,8 @@ import PostFilters from '@/components/blog/post-filters';
 import CategoryDisplayBar from '@/components/blog/CategoryDisplayBar';
 import AdUnit from '@/components/ads/ad-unit';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { CATEGORIES, TAGS } from '@/lib/mock-data';
+
 
 const POSTS_PER_PAGE = 9;
 
@@ -16,8 +18,8 @@ export default function BlogPage() {
   const searchParams = useSearchParams();
   const [currentPage, setCurrentPage] = useState(1);
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
   const [isLoading, setIsLoading] = useState(true);
 
   const showPostFilters = !!searchTerm;
@@ -41,11 +43,9 @@ export default function BlogPage() {
     const fetchPosts = async () => {
       try {
         setIsLoading(true);
-        const { posts: fetchedPosts } = await BlogAPI.getPosts({ 
-          status: 'published',
-          search: searchTerm,
-          category: selectedCategory 
-        });
+        // In a real app, BlogAPI.getPosts would handle search and category filtering on the backend.
+        // For now, we fetch all and filter client-side in filteredPosts memo.
+        const { posts: fetchedPosts } = await BlogAPI.getPosts({ status: 'published'});
         setPosts(fetchedPosts);
       } catch (error) {
         console.error('Error fetching posts:', error);
@@ -56,12 +56,14 @@ export default function BlogPage() {
     };
 
     fetchPosts();
-  }, [searchTerm, selectedCategory, currentPage]);
+  }, []); // Fetch once on mount
 
   useEffect(() => {
+    setSearchTerm(searchParams.get('search') || '');
+    setSelectedCategory(searchParams.get('category') || '');
     setCurrentPage(1); 
     window.scrollTo(0, 0);
-  }, [searchTerm, selectedCategory]);
+  }, [searchParams]);
   
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -73,7 +75,7 @@ export default function BlogPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -102,15 +104,16 @@ export default function BlogPage() {
           <AdUnit format="banner" placeholder className="mb-8" />
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedPosts.map((post, index) => (
-              <>
-                <BlogCard key={post.id} post={post} />
-                {/* Add in-article ads after every 6th post */}
+              // Using a fragment as the key for the outer element if necessary
+              // but the BlogCard itself needs a key if it's the direct child of map
+              <React.Fragment key={post._id}> 
+                <BlogCard post={post} />
                 {(index + 1) % 6 === 0 && index !== paginatedPosts.length - 1 && (
                   <div className="col-span-full my-8">
                     <AdUnit format="in-article" placeholder />
                   </div>
                 )}
-              </>
+              </React.Fragment>
             ))}
           </div>
           <AdUnit format="banner" placeholder className="mt-8" />

@@ -14,7 +14,7 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
       <h2 className="text-3xl font-bold mb-8 border-b pb-2 border-primary/30">Recent Articles</h2>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.map(post => (
-          <BlogCard key={post.id} post={post} />
+          <BlogCard key={post._id} post={post} />
         ))}
       </div>
     </section>
