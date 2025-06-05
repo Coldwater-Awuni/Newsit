@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,14 @@ interface CategoryManagerProps {
   onDeleteCategory: (id: string) => Promise<void>;
 }
 
+const initialNewCategoryState: Omit<Category, '_id'> = {
+  name: '',
+  description: '',
+  color: '#3B82F6',
+  sourceUrls: [], // Aligned with Category type
+  isActive: true,
+};
+
 export function CategoryManager({
   categories,
   onCreateCategory,
@@ -32,39 +41,42 @@ export function CategoryManager({
 }: CategoryManagerProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [newCategory, setNewCategory] = useState({
-    name: '',
-    description: '',
-    color: '#3B82F6', // Default blue color
-    sourceUrls: [],
-    isActive: true,
-  });
+  const [newCategory, setNewCategory] = useState<Omit<Category, '_id'>>(initialNewCategoryState);
+
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await onCreateCategory(newCategory);
-    setNewCategory({
-      name: '',
-      description: '',
-      color: '#3B82F6',
-      sourceUrls: [],
-      isActive: true
-    });
+    setNewCategory(initialNewCategoryState);
     setIsCreateDialogOpen(false);
   };
 
   const handleUpdateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingCategory) {
-      await onUpdateCategory(editingCategory._id, editingCategory);
+      // Ensure sourceUrls is part of the update payload, even if not directly editable in this UI iteration
+      const categoryToUpdate: Partial<Category> = {
+        ...editingCategory,
+        sourceUrls: editingCategory.sourceUrls || [], 
+      };
+      await onUpdateCategory(editingCategory._id, categoryToUpdate);
       setEditingCategory(null);
     }
   };
+  
+  // Placeholder for managing sourceUrls if UI were added
+  // const handleAddSourceUrl = (categoryStateSetter: React.Dispatch<React.SetStateAction<any>>) => { ... };
+  // const handleRemoveSourceUrl = (index: number, categoryStateSetter: React.Dispatch<React.SetStateAction<any>>) => { ... };
+  // const handleSourceUrlChange = (index: number, field: string, value: string | number, categoryStateSetter: React.Dispatch<React.SetStateAction<any>>) => { ... };
+
 
   return (
     <Card className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold">Categories</h2>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <Dialog open={isCreateDialogOpen} onOpenChange={(isOpen) => {
+          setIsCreateDialogOpen(isOpen);
+          if (!isOpen) setNewCategory(initialNewCategoryState); // Reset form on close
+        }}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="w-4 h-4 mr-2" />
@@ -80,21 +92,29 @@ export function CategoryManager({
                 placeholder="Category Name"
                 value={newCategory.name}
                 onChange={e => setNewCategory({ ...newCategory, name: e.target.value })}
+                required
               />
               <Textarea
                 placeholder="Description"
-                value={newCategory.description}
+                value={newCategory.description || ''}
                 onChange={e => setNewCategory({ ...newCategory, description: e.target.value })}
               />
               <div className="flex items-center space-x-2">
                 <label className="text-sm">Color:</label>
                 <Input
                   type="color"
-                  value={newCategory.color}
+                  value={newCategory.color || '#3B82F6'}
                   onChange={e => setNewCategory({ ...newCategory, color: e.target.value })}
                   className="w-20 h-8 p-1"
                 />
               </div>
+              {/* Basic display for sourceUrls - not editable here yet */}
+              {/* 
+              <div>
+                <Label>Source URLs (Current: {newCategory.sourceUrls.length})</Label>
+                <p className="text-xs text-muted-foreground">Advanced editing for source URLs not available in this dialog.</p>
+              </div>
+              */}
               <div className="flex items-center space-x-2">
                 <Switch
                   checked={newCategory.isActive}
@@ -123,12 +143,15 @@ export function CategoryManager({
                   <p className="text-sm text-muted-foreground mt-1">
                     {category.description}
                   </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Source URLs: {category.sourceUrls?.length || 0}
+                  </p>
                 </div>
                 <div className="flex space-x-2">
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => setEditingCategory(category)}
+                    onClick={() => setEditingCategory({...category})} // Clone category for editing
                   >
                     <Edit2 className="w-4 h-4" />
                   </Button>
@@ -163,31 +186,41 @@ export function CategoryManager({
       </ScrollArea>
 
       {editingCategory && (
-        <Dialog open={!!editingCategory} onOpenChange={() => setEditingCategory(null)}>
+        <Dialog open={!!editingCategory} onOpenChange={(isOpen) => {
+          if (!isOpen) setEditingCategory(null);
+        }}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Category</DialogTitle>
+              <DialogTitle>Edit Category: {editingCategory.name}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleUpdateSubmit} className="space-y-4">
               <Input
                 placeholder="Category Name"
                 value={editingCategory.name}
                 onChange={e => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                required
               />
               <Textarea
                 placeholder="Description"
-                value={editingCategory.description}
+                value={editingCategory.description || ''}
                 onChange={e => setEditingCategory({ ...editingCategory, description: e.target.value })}
               />
               <div className="flex items-center space-x-2">
                 <label className="text-sm">Color:</label>
                 <Input
                   type="color"
-                  value={editingCategory.color}
+                  value={editingCategory.color || '#3B82F6'}
                   onChange={e => setEditingCategory({ ...editingCategory, color: e.target.value })}
                   className="w-20 h-8 p-1"
                 />
               </div>
+              {/* Basic display for sourceUrls - not editable here yet */}
+              {/* 
+              <div>
+                <Label>Source URLs (Current: {editingCategory.sourceUrls?.length || 0})</Label>
+                 <p className="text-xs text-muted-foreground">Advanced editing for source URLs not available in this dialog.</p>
+              </div>
+              */}
               <div className="flex items-center space-x-2">
                 <Switch
                   checked={editingCategory.isActive}

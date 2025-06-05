@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { BlogAPI } from '@/lib/api-client';
-import type { BlogPost, Category, SafetySetting, HarmCategory, SafetyThreshold } from '@/lib/types';
+import type { BlogPost, Category, SafetySetting } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
+import { ai as genkitAi } from '@/ai/genkit'; // Import Genkit AI instance
 
 export default function AdminPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -43,6 +45,8 @@ export default function AdminPage() {
     { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
     { category: 'HARM_CATEGORY_CIVIC_INTEGRITY', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
   ]);
+
+  const genkitModelName = genkitAi.model?.name || 'Default Genkit Model';
 
   const handleAddSourceSite = (site: string) => {
     setSourceSites(prev => [...prev, site]);
@@ -102,7 +106,8 @@ export default function AdminPage() {
       category: categories[0]?.name || '',
       status: 'draft',
       slug: '',
-      featured: false
+      featured: false,
+      metadata: { llmModel: '', llmProvider: ''} // Initialize metadata
     });
     setIsCreatingNew(true);
   };
@@ -294,6 +299,7 @@ export default function AdminPage() {
                               alt={post.title}
                               fill
                               className="object-cover"
+                              data-ai-hint="thumbnail image"
                             />
                           </div>
                         )}
@@ -413,8 +419,9 @@ export default function AdminPage() {
                 Configure AI settings and manage content generation sources
               </CardDescription>
             </CardHeader>
-            <CardContent>              <AiConfigurationCard
-                modelName="GPT-4"
+            <CardContent>             
+             <AiConfigurationCard
+                modelName={genkitModelName}
                 sourceSites={sourceSites}
                 onAddSourceSite={handleAddSourceSite}
                 onRemoveSourceSite={handleRemoveSourceSite}

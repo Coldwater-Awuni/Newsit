@@ -6,11 +6,66 @@ Development: http://localhost:3000/api
 Production: https://your-production-url.com/api
 ```
 
+## Database Models
+
+### User Model
+```typescript
+interface User {
+    email: string;
+    firebaseUid: string;
+    role: 'admin' | 'user';
+    displayName?: string;
+    photoURL?: string;
+    lastLogin?: Date;
+    metadata: {
+        createdAt: Date;
+        lastSignInTime: Date;
+    }
+}
+```
+
+### Post Model
+```typescript
+interface Post {
+    slug: string;
+    title: string;
+    excerpt: string;
+    content: string;
+    summary: string;
+    imageUrl?: string;
+    tags: string[];
+    sourceUrl?: string;
+    category: string;
+    featured: boolean;
+    publishDate: Date;
+    author: string | { name: string } | 'admin' | 'ai';
+    status: 'draft' | 'published';
+    metadata?: {
+        llmProvider?: string;
+        llmModel?: string;
+    }
+}
+```
+
+### Category Model
+```typescript
+interface Category {
+    name: string;
+    description?: string;
+    sourceUrls: Array<{
+        url: string;
+        description?: string;
+        priority: number;
+    }>;
+    isActive: boolean;
+}
+```
+
 ## Authentication
 
 Uses Firebase Authentication. All protected routes require a Firebase ID token in the Authorization header.
 
-### Setup
+### Firebase Setup
 ```javascript
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
@@ -26,150 +81,57 @@ const auth = getAuth(app);
 ```
 
 ### Authentication Flow
-1. Authenticate with Firebase (email/password or Google)
+1. Register or sign in user with Firebase
 2. Get Firebase ID token
-3. Send token to backend for verification
+3. Verify token with backend
 4. Include token in all subsequent API requests
 
-## Data Models
+### Authentication Methods
 
-### User
+#### Register
 ```typescript
-interface User {
-    email: string;
-    role: 'admin' | 'user';
-    displayName?: string;
-    photoURL?: string;
-}
+const register = async (email: string, password: string, displayName?: string) => {
+    try {
+        // 1. Call backend registration endpoint
+        const response = await api.post('/api/auth/register', {
+            email,
+            password,
+            displayName
+        });
+        
+        // 2. Sign in with Firebase using custom token
+        const { customToken } = response.data.data;
+        await signInWithCustomToken(auth, customToken);
+        
+        return response.data;
+    } catch (error) {
+        console.error('Registration error:', error);
+        throw error;
+    }
+};
 ```
 
-### Post
+#### Sign In with Email/Password
 ```typescript
-interface Post {
-    _id: string;
-    slug: string;
-    title: string;
-    excerpt: string;
-    content: string;
-    summary: string;
-    imageUrl?: string;
-    tags: string[];
-    sourceUrl?: string;
-    category: string;
-    featured: boolean;
-    publishDate: Date;
-    author: 'admin' | 'ai' | {
-        name: string;
-        avatarUrl?: string;
-    };
-    status: 'draft' | 'published';
-}
+const signIn = async (email: string, password: string) => {
+    try {
+        // 1. Sign in with Firebase
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
+        // 2. Get Firebase ID token
+        const idToken = await userCredential.user.getIdToken();
+        
+        // 3. Verify token with backend
+        const response = await api.post('/api/auth/verify-token', { idToken });
+        return response.data;
+    } catch (error) {
+        console.error('Sign in error:', error);
+        throw error;
+    }
+};
 ```
 
-### Category
-```typescript
-interface Category {
-    name: string;
-    description?: string;
-    sourceUrls: Array<{
-        url: string;
-        description?: string;
-        priority: number;
-    }>;
-    isActive: boolean;
-}
-```
-
-## API Endpoints
-
-### Authentication
-- **POST** `/api/auth/verify-token`
-  - Body: `{ idToken: string }`
-  - Returns: User profile
-
-- **GET** `/api/auth/profile`
-  - Protected: Yes
-  - Returns: User profile
-
-- **PUT** `/api/auth/profile`
-  - Protected: Yes
-  - Body: `{ displayName?: string, photoURL?: string }`
-  - Returns: Updated profile
-
-### Blog Posts
-- **GET** `/api/blog/posts`
-  - Query params: 
-    ```typescript
-    {
-      category?: string;
-      status?: 'draft' | 'published';
-      featured?: boolean;
-      author?: string;
-      tag?: string;
-      page?: number;
-      limit?: number;
-    }
-    ```
-  - Returns: `{ posts: Post[], pagination: PaginationInfo }`
-
-- **GET** `/api/blog/posts/:id`
-  - Returns: Single post with full content
-
-- **POST** `/api/blog/posts` (Protected)
-  - Body: Post data without _id
-  - Returns: Created post
-
-- **PUT** `/api/blog/posts/:id` (Protected)
-  - Body: Partial post data
-  - Returns: Updated post
-
-- **DELETE** `/api/blog/posts/:id` (Protected, Admin only)
-  - Returns: 204 No Content
-
-- **GET** `/api/blog/models`
-  - Protected: No
-  - Returns: Available LLM models for content generation
-    ```typescript
-    interface LLMProvider {
-        provider: 'openai' | 'gemini' | 'groq';
-        models: string[];
-        default: string;
-    }
-    ```
-
-- **POST** `/api/blog/generate-post` (Protected)
-  - Body: 
-    ```typescript
-    {
-      keyword: string;
-      sourceUrl?: string;
-      instruction?: string;
-      category: string;
-      provider?: 'openai' | 'gemini' | 'groq';
-      model?: string;  // Model ID from the specific provider
-    }
-    ```
-  - Returns: Generated post
-
-### Categories
-- **GET** `/api/categories`
-  - Returns: All categories
-
-- **GET** `/api/categories/:id`
-  - Returns: Single category
-
-- **POST** `/api/categories` (Protected, Admin only)
-  - Body: Category data
-  - Returns: Created category
-
-- **PUT** `/api/categories/:id` (Protected, Admin only)
-  - Body: Partial category data
-  - Returns: Updated category
-
-- **DELETE** `/api/categories/:id` (Protected, Admin only)
-  - Returns: 204 No Content
-
-## Example API Client Setup
+## API Client Setup
 
 ```typescript
 import axios from 'axios';
@@ -202,23 +164,241 @@ api.interceptors.response.use(
 );
 ```
 
-## Error Handling
+## API Endpoints
 
-All endpoints return errors in this format:
-```typescript
-interface ApiError {
-    status: 'error' | 'fail';
-    message: string;
-    errors?: Array<{
-        field?: string;
-        message: string;
+### Authentication Endpoints
+
+#### POST /api/auth/register
+- Public endpoint
+- Creates a new user account
+- Body:
+  ```typescript
+  {
+    email: string;
+    password: string;
+    displayName?: string;
+  }
+  ```
+- Returns:
+  ```typescript
+  {
+    status: 'success';
+    data: {
+      customToken: string;
+      user: User;
+    }
+  }
+  ```
+
+#### POST /api/auth/verify-token
+- Public endpoint
+- Verifies Firebase ID token
+- Body:
+  ```typescript
+  {
+    idToken: string;
+  }
+  ```
+- Returns:
+  ```typescript
+  {
+    status: 'success';
+    data: {
+      user: User;
+    }
+  }
+  ```
+
+#### PUT /api/auth/profile
+- Protected endpoint
+- Updates user profile
+- Body:
+  ```typescript
+  {
+    displayName?: string;
+    photoURL?: string;
+  }
+  ```
+
+### Blog Endpoints
+
+#### GET /api/blog/posts
+- Public endpoint
+- Query parameters:
+  ```typescript
+  {
+    category?: string;
+    status?: 'draft' | 'published';
+    featured?: boolean;
+    author?: string;
+    tag?: string;
+    page?: number;
+    limit?: number;
+  }
+  ```
+- Returns paginated posts list
+
+#### GET /api/blog/posts/:id
+- Public endpoint
+- Returns single post details
+
+#### POST /api/blog/generate-post
+- Protected endpoint
+- Generates blog post using AI
+- Body:
+  ```typescript
+  {
+    keyword?: string;
+    sourceUrl?: string;
+    instruction?: string;
+    category: string;
+    provider: string;
+    model: string;
+  }
+  ```
+- Workflow:
+  1. Validates category existence
+  2. Uses provided sourceUrl or gets one from category's sourceUrls
+  3. Scrapes content from URL
+  4. Generates content using specified AI model
+  5. Creates post in draft status
+
+#### GET /api/blog/llm-models
+- Protected endpoint
+- Returns available AI models:
+  ```typescript
+  {
+    status: 'success';
+    data: {
+      models: Array<{
+        provider: string;
+        name: string;
+        description?: string;
+      }>;
+    }
+  }
+  ```
+
+#### POST /api/blog/posts
+- Protected endpoint
+- Creates a new post manually
+- Body: Post model fields
+
+#### PUT /api/blog/posts/:id
+- Protected endpoint
+- Updates existing post
+- Body: Post model fields
+
+#### DELETE /api/blog/posts/:id
+- Protected (Admin only)
+- Deletes post
+
+### Category Endpoints
+
+#### GET /api/categories
+- Public endpoint
+- Returns all categories
+
+#### GET /api/categories/:id
+- Public endpoint
+- Returns single category details
+
+#### POST /api/categories
+- Protected (Admin only)
+- Creates new category
+- Body:
+  ```typescript
+  {
+    name: string;
+    description?: string;
+    sourceUrls: Array<{
+      url: string;
+      description?: string;
+      priority?: number;
     }>;
-}
-```
+    isActive?: boolean;
+  }
+  ```
 
-Common status codes:
-- 400: Validation error
-- 401: Unauthorized (invalid/missing token)
-- 403: Forbidden (insufficient permissions)
-- 404: Resource not found
-- 500: Server error
+#### PUT /api/categories/:id
+- Protected (Admin only)
+- Updates category
+- Body: Same as POST
+
+#### DELETE /api/categories/:id
+- Protected (Admin only)
+- Deletes category
+
+## Admin Dashboard Integration
+
+### Dashboard Features
+
+1. **User Management**
+   - View all users
+   - Update user roles
+   - Delete users
+   - Monitor user activity
+
+2. **Content Management**
+   - View all posts with filtering options
+   - Edit/Delete posts
+   - Toggle post status (draft/published)
+   - Feature/unfeature posts
+
+3. **Category Management**
+   - Create/Edit/Delete categories
+   - Manage source URLs for each category
+   - Toggle category active status
+
+4. **AI Content Generation**
+   - Select AI provider and model
+   - Available providers:
+     - OpenAI
+     - Google Gemini
+     - Groq
+   - Input options:
+     - Keywords
+     - Source URLs
+     - Custom instructions
+     - Category selection
+   - Content workflow states:
+     1. Content generation
+     2. Review/Edit
+     3. Publish
+
+### Access Control
+
+- Role-based access:
+  - Admin: Full access to all features
+  - User: Limited to:
+    - Viewing public content
+    - Generating content
+    - Managing own posts
+
+### API Integration Tips
+
+1. **Error Handling**
+   ```typescript
+   interface ApiError {
+     status: 'error';
+     message: string;
+     code?: string;
+   }
+   ```
+
+2. **Authorization Header**
+   ```typescript
+   headers: {
+     Authorization: `Bearer ${firebaseIdToken}`
+   }
+   ```
+
+3. **Content Generation Status Monitoring**
+   - Poll the post status after generation
+   - Handle draft review process
+   - Implement auto-save during editing
+
+4. **File Upload**
+   - Support image uploads for posts
+   - Handle featured images
+   - Support multiple formats

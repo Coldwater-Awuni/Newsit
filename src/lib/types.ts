@@ -1,3 +1,4 @@
+
 // Base types
 export interface Author {
   name: string;
@@ -20,6 +21,10 @@ export interface BlogPost {
   publishDate: string;
   author: 'admin' | 'ai' | Author;
   status: 'draft' | 'published';
+  metadata?: { // Added metadata field
+    llmProvider?: string;
+    llmModel?: string;
+  };
 }
 
 export type SafetyThreshold = 
@@ -103,3 +108,4 @@ export interface User {
   avatarUrl?: string;
   role: 'admin' | 'editor' | 'viewer';
 }
+

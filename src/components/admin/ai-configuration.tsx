@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -13,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { SafetySetting, SafetyThreshold } from '@/lib/types';
 
 interface AiConfigurationCardProps {
-  modelName: string;
+  modelName: string; // Changed from fixed "GPT-4" to be dynamic
   sourceSites: string[];
   onAddSourceSite: (site: string) => void;
   onRemoveSourceSite: (site: string) => void;
@@ -114,7 +115,7 @@ const AiConfigurationCard: React.FC<AiConfigurationCardProps> = ({
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label>Model</Label>
+            <Label>Default Model</Label>
             <div className="flex items-center space-x-2 p-2 bg-muted rounded-md">
               <BrainCircuit className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium">{modelName}</span>
@@ -143,7 +144,7 @@ const AiConfigurationCard: React.FC<AiConfigurationCardProps> = ({
                     <SelectItem value="BLOCK_NONE">Block None</SelectItem>
                     <SelectItem value="BLOCK_LOW_AND_ABOVE">Block Low & Above</SelectItem>
                     <SelectItem value="BLOCK_MEDIUM_AND_ABOVE">Block Medium & Above</SelectItem>
-                    <SelectItem value="BLOCK_HIGH_AND_ABOVE">Block High & Above</SelectItem>
+                    <SelectItem value="BLOCK_HIGH_AND_ABOVE">Block High & Above</SelectItem> {/* Corrected value */}
                   </SelectContent>
                 </Select>
               </div>
