@@ -17,6 +17,7 @@ import { CATEGORIES } from '@/lib/mock-data';
 const mainNavLinks = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
+  { href: '/admin', label: 'Admin', icon: Settings },
 ];
 
 export default function Navbar() {

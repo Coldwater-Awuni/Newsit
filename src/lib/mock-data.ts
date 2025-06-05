@@ -5,7 +5,7 @@ export const TAGS = ['Innovation', 'Research', 'Health', 'Adventure', 'Startups'
 
 export const BLOG_POSTS: BlogPost[] = [
   {
-    id: '1',
+    _id: '1',
     slug: 'the-future-of-ai',
     title: 'The Future of Artificial Intelligence: Trends to Watch',
     excerpt: 'AI is rapidly evolving. Discover the key trends that will shape its future and impact various industries.',
@@ -20,6 +20,7 @@ export const BLOG_POSTS: BlogPost[] = [
       <p>As AI becomes more powerful, the need for ethical guidelines and robust governance frameworks is paramount. Addressing bias, ensuring transparency, and maintaining accountability are key challenges.</p>
       <p>The journey of AI is just beginning. Its potential to solve complex problems and create new opportunities is immense, but it requires careful navigation and responsible development.</p>
     `,
+    summary: 'A comprehensive look at the future of AI and its impact across industries.',
     imageUrl: 'https://picsum.photos/seed/ai/1200/800',
     author: { name: 'Dr. Ada Lovelace', avatarUrl: 'https://picsum.photos/seed/ada/100/100' },
     publishDate: '2024-07-15T10:00:00Z',
@@ -29,7 +30,7 @@ export const BLOG_POSTS: BlogPost[] = [
     status: 'published',
   },
   {
-    id: '2',
+    _id: '2',
     slug: 'exploring-the-cosmos',
     title: 'Exploring the Cosmos: New Discoveries in Space',
     excerpt: 'Recent advancements in telescopes and space missions have unveiled breathtaking new insights into our universe.',
@@ -51,7 +52,7 @@ export const BLOG_POSTS: BlogPost[] = [
     status: 'published',
   },
   {
-    id: '3',
+    _id: '3',
     slug: 'mindful-living-in-a-digital-age',
     title: 'Mindful Living in a Digital Age: Finding Balance',
     excerpt: 'In our hyper-connected world, practicing mindfulness can help reduce stress and improve overall well-being.',
@@ -77,7 +78,7 @@ export const BLOG_POSTS: BlogPost[] = [
     status: 'published',
   },
   {
-    id: '4',
+    _id: '4',
     slug: 'the-rise-of-sustainable-travel',
     title: 'The Rise of Sustainable Travel: Exploring Responsibly',
     excerpt: 'More travelers are seeking eco-friendly and culturally sensitive ways to explore the world. What does sustainable travel really mean?',
@@ -103,7 +104,7 @@ export const BLOG_POSTS: BlogPost[] = [
     status: 'published',
   },
   {
-    id: '5',
+    _id: '5',
     slug: 'mastering-remote-work',
     title: 'Mastering Remote Work: Productivity and Well-being',
     excerpt: 'Remote work is the new norm for many. Learn effective strategies to stay productive, connected, and maintain a healthy work-life balance.',
@@ -126,7 +127,7 @@ export const BLOG_POSTS: BlogPost[] = [
     status: 'draft',
   },
   {
-    id: '6',
+    _id: '6',
     slug: 'latest-tech-breakthroughs',
     title: 'Breaking News: Latest Tech Breakthroughs of the Month',
     excerpt: 'Stay updated with the most recent advancements in the tech world, from AI to quantum computing.',
@@ -148,4 +149,5 @@ export const BLOG_POSTS: BlogPost[] = [
     status: 'published',
   }
 ];
-    
+
+
