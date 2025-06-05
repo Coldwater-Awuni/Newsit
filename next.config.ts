@@ -24,6 +24,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer, webpack }) => {
+    if (!isServer) {
+      // Prevent 'async_hooks' from being bundled on the client
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'async_hooks': false,
+      };
+    }
+    // Required for Genkit plugins that might use gRPC
+    config.externals = [...config.externals, 'pg-hstore'];
+    return config;
+  },
 };
 
 export default nextConfig;
