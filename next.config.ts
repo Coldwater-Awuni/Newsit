@@ -26,10 +26,11 @@ const nextConfig: NextConfig = {
   },
   webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
-      // Prevent 'async_hooks' from being bundled on the client
+      // Prevent 'async_hooks' and related modules from being bundled on the client
       config.resolve.alias = {
         ...config.resolve.alias,
         'async_hooks': false,
+        '@opentelemetry/context-async-hooks': false, // Add this more specific alias
       };
     }
     // Required for Genkit plugins that might use gRPC
